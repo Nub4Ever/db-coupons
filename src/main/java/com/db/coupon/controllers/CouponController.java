@@ -4,7 +4,9 @@ import com.db.coupon.dto.CouponDTO;
 import com.db.coupon.models.Coupon;
 import com.db.coupon.services.CouponService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,10 +30,18 @@ public class CouponController {
         Date current = new Date();
         Optional<Coupon> obj = couponService.getCouponById(id);
 
-       if(obj.isEmpty() || obj.get().getExpiryDate().compareTo(current) > 0) {
+       if(obj.isEmpty() || obj.get().getExpiryDate().compareTo(current) < 0) {
            String errorMessage = "Not found!";
            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
        }
-       return ResponseEntity.ok(obj.get().toString());
+
+        ResponseCookie springCookie = ResponseCookie.from("code", obj.get().getCode())
+                .path("/")
+                .build();
+        return ResponseEntity .ok()
+                .header(HttpHeaders.SET_COOKIE, springCookie.toString()) .build();
     }
+
+
+
 }

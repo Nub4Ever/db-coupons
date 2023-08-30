@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CouponService {
@@ -21,5 +23,9 @@ public class CouponService {
             result.add(new CouponDTO(c.getCode(), c.getExpiryDate(), c.getNumUses(), c.getDiscount()));
         }
         return result;
+    }
+
+    public Optional<Coupon> getCouponById(Integer id){
+        return couponRepository.findById(id);
     }
 }

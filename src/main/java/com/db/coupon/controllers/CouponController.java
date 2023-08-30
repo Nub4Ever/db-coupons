@@ -1,15 +1,16 @@
 package com.db.coupon.controllers;
 
 import com.db.coupon.dto.CouponDTO;
+import com.db.coupon.models.Coupon;
 import com.db.coupon.services.CouponService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -20,5 +21,17 @@ public class CouponController {
     @GetMapping("/coupons")
     List<CouponDTO> getAllCoupons() {
         return couponService.getAllCoupons();
+    }
+
+    @GetMapping("/coupon/{id}")
+    public ResponseEntity<String> getCouponById(@PathVariable Integer id){
+        Date current = new Date();
+        Optional<Coupon> obj = couponService.getCouponById(id);
+
+       if(obj.isEmpty() || obj.get().getExpiryDate().compareTo(current) > 0) {
+           String errorMessage = "Not found!";
+           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+       }
+       return ResponseEntity.ok(obj.get().toString());
     }
 }

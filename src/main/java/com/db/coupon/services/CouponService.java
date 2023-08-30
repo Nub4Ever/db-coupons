@@ -22,7 +22,12 @@ public class CouponService {
         for (var c : coupons) {
             result.add(new CouponDTO(c.getCode(), c.getExpiryDate(), c.getNumUses(), c.getDiscount()));
         }
+
         return result;
+    }
+
+    public Coupon saveCoupon(Coupon c) {
+        return couponRepository.save(c);
     }
 
     public Optional<Coupon> getCouponById(Integer id){

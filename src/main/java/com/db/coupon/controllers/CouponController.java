@@ -26,7 +26,10 @@ public class CouponController {
     }
 
     @GetMapping("/coupon/{id}")
-    public ResponseEntity<String> getCouponById(@PathVariable Integer id){
+    public ResponseEntity<String> getCouponById(
+            @PathVariable Integer id,
+            @CookieValue(name = "code", defaultValue = "") String cookieCode
+    ){
         Date current = new Date();
         Optional<Coupon> obj = couponService.getCouponById(id);
 
@@ -34,6 +37,23 @@ public class CouponController {
            String errorMessage = "Not found!";
            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
        }
+
+       // cuponul a fost gasit si nu este expirat
+        // e prima data cand utilizatorul cere cuponul (nu are un cookie cu el)
+        // sau are un cookie care este diferit de codeul cuponului
+        if (cookieCode.compareTo("") == 0 || obj.get().getCode().compareTo(cookieCode) != 0) {
+            // TODO: cresc numarul de utilizari ale cuponului
+            Coupon coupon = obj.get();
+            if (coupon.getNumUsesLeft() - 1 < 0) {
+                String errorMessage = "No usages left!";
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+            }
+            coupon.setNumUses(coupon.getNumUses() + 1);
+            coupon.setNumUsesLeft(coupon.getNumUsesLeft() - 1);
+            couponService.saveCoupon(coupon);
+        } else {
+            // Nu cresc numarul de utilizari
+        }
 
         ResponseCookie springCookie = ResponseCookie.from("code", obj.get().getCode())
                 .path("/")
